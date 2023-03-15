@@ -8,6 +8,18 @@
 #define EMPTY 2
 char* cboard = (char*)"o@.";
 
+class Node {
+public:
+  int wins;
+  int depth;
+  Node *parent;
+  vector<Node *> children;
+  int visit;
+  int getN(){
+    return visit;
+  }
+};    
+
 struct bt_piece_t {
   int line; int col;
 };
@@ -89,6 +101,11 @@ struct bt_t {
   bt_move_t mcts_ppa(double _sec);
   bt_move_t nmcs(double _sec);
   bt_move_t nrpa(double _sec);
+
+  Node* selection(int board[MAX_LINES][MAX_COLS]);
+  void expansion(Node* selected);
+  bool simulation(Node* current);
+  void backpropagation(Node* simulated);
 
   void add_move(int _li, int _ci, int _lf, int _cf) {
     moves[nb_moves].line_i = _li; moves[nb_moves].col_i = _ci;
