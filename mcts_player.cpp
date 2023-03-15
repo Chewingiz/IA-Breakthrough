@@ -18,6 +18,11 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
+Result selection(Node *racine, bt_t board);
+void expansion(Node *selected, bt_t board);
+bool simulation(bt_t board);
+void backpropagation(Node *selected, bool simulation);
+
 float UCB1(Node *noeud) {
   return (noeud->wins / noeud->visit) +
          (0.4 * sqrt(log(noeud->parent->visit) / noeud->visit));
@@ -114,6 +119,23 @@ void play(char a, char b, char c, char d) {
   if (showboard_at_each_move)
     showboard();
   printf("= \n\n");
+}
+
+bt_move_t mcts(double _sec) {}
+
+void backpropagation(Node *simulated, bool simulation) {
+  if (simulation) {
+    while (simulated != NULL) {
+      simulated->visit += 1;
+      simulated->wins += 1;
+      simulated = simulated->parent;
+    }
+  } else {
+    while (simulated != NULL) {
+      simulated->visit += 1;
+      simulated = simulated->parent;
+    }
+  }
 }
 
 int main(int _ac, char **_av) {

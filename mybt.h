@@ -2,8 +2,10 @@
 #define MYBT_H
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <random>
 #include <vector>
+
 #define WHITE 0
 #define BLACK 1
 #define EMPTY 2
@@ -107,11 +109,6 @@ struct bt_t {
   bt_move_t mcts_ppa(double _sec);
   bt_move_t nmcs(double _sec);
   bt_move_t nrpa(double _sec);
-
-  Node *selection(int board[MAX_LINES][MAX_COLS]);
-  void expansion(Node *selected);
-  bool simulation(Node *current);
-  void backpropagation(Node *simulated);
 
   void add_move(int _li, int _ci, int _lf, int _cf) {
     moves[nb_moves].line_i = _li;
