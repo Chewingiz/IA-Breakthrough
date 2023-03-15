@@ -8,17 +8,13 @@
 #define EMPTY 2
 char* cboard = (char*)"o@.";
 
-class Node {
-public:
+typedef struct node {
   int wins;
-  int depth;
-  Node *parent;
-  vector<Node *> children;
+  node *parent;
+  vector<node *> children;
   int visit;
-  int getN(){
-    return visit;
-  }
-};    
+  int getN() { return visit; }
+} Node;  
 
 struct bt_piece_t {
   int line; int col;
