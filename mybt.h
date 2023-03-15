@@ -3,34 +3,52 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <vector>
 #define WHITE 0
 #define BLACK 1
 #define EMPTY 2
-char* cboard = (char*)"o@.";
+using namespace std;
+char *cboard = (char *)"o@.";
 
 struct bt_piece_t {
-  int line; int col;
+  int line;
+  int col;
 };
+
 struct bt_move_t {
-  int line_i; int col_i;
-  int line_f; int col_f;
+  int line_i;
+  int col_i;
+  int line_f;
+  int col_f;
 
   // all moves are printed without ambiguity
   // white in its color
   // black in red color
-  void print(FILE* _fp, bool _white, int _nbl) {
-    if(_white) {
-      fprintf(_fp, "%d%c%d%c", _nbl-line_i, 'a'+col_i, _nbl-line_f, 'a'+col_f);
+  void print(FILE *_fp, bool _white, int _nbl) {
+    if (_white) {
+      fprintf(_fp, "%d%c%d%c", _nbl - line_i, 'a' + col_i, _nbl - line_f,
+              'a' + col_f);
     } else {
-      fprintf(_fp, "\x1B[31m%d%c%d%c\x1B[0m", _nbl-line_i, 'a'+col_i, _nbl-line_f, 'a'+col_f);
+      fprintf(_fp, "\x1B[31m%d%c%d%c\x1B[0m", _nbl - line_i, 'a' + col_i,
+              _nbl - line_f, 'a' + col_f);
     }
   }
   std::string tostr(int _nbl) {
     char ret[16];
-    snprintf(ret, sizeof(ret), "%d%c%d%c", _nbl-line_i, 'a'+col_i, _nbl-line_f, 'a'+col_f);
+    snprintf(ret, sizeof(ret), "%d%c%d%c", _nbl - line_i, 'a' + col_i,
+             _nbl - line_f, 'a' + col_f);
     return std::string(ret);
   }
 };
+
+typedef struct node {
+  bt_move_t move;
+  int wins;
+  node *parent;
+  vector<node *> children;
+  int visit;
+  int getN() { return visit; }
+} Node;
 
 // alloc default 10x10
 // standard game in 8x8
@@ -48,22 +66,22 @@ struct bt_t {
   int board[MAX_LINES][MAX_COLS];
   int turn;
 
-  bt_piece_t white_pieces[2*MAX_LINES];
+  bt_piece_t white_pieces[2 * MAX_LINES];
   int nb_white_pieces;
-  bt_piece_t black_pieces[2*MAX_LINES];
+  bt_piece_t black_pieces[2 * MAX_LINES];
   int nb_black_pieces;
-  bt_move_t moves[3*2*MAX_LINES];
+  bt_move_t moves[3 * 2 * MAX_LINES];
   int nb_moves;
   // last turn of moves update
   int turn_of_last_moves_update;
 
   void init(int _nbl, int _nbc);
   void init_pieces();
-  void print_board(FILE* _fp);
-  void print_turn_and_moves(FILE* _fp);
+  void print_board(FILE *_fp);
+  void print_turn_and_moves(FILE *_fp);
   void update_moves();
   void update_moves(int _color);
-  
+
   bool white_can_move_right(int _line, int _col);
   bool white_can_move_forward(int _line, int _col);
   bool white_can_move_left(int _line, int _col);
@@ -80,7 +98,7 @@ struct bt_t {
   std::string mkH1();
   std::string mkH2();
   long long int mkH3();
-      
+
   // déclarées mais non définies
   double eval();
   bt_move_t minimax(double _sec);
@@ -90,26 +108,39 @@ struct bt_t {
   bt_move_t nmcs(double _sec);
   bt_move_t nrpa(double _sec);
 
+  Node *selection(int board[MAX_LINES][MAX_COLS]);
+  void expansion(Node *selected);
+  bool simulation(Node *current);
+  void backpropagation(Node *simulated);
+
   void add_move(int _li, int _ci, int _lf, int _cf) {
-    moves[nb_moves].line_i = _li; moves[nb_moves].col_i = _ci;
-    moves[nb_moves].line_f = _lf; moves[nb_moves].col_f = _cf;
+    moves[nb_moves].line_i = _li;
+    moves[nb_moves].col_i = _ci;
+    moves[nb_moves].line_f = _lf;
+    moves[nb_moves].col_f = _cf;
     nb_moves++;
   }
 };
-  
+
+struct Result {
+  bt_t board;
+  Node *noeud;
+};
+
 void bt_t::init(int _nbl, int _nbc) {
-  if(_nbl > MAX_LINES || _nbc > MAX_COLS) {
+  if (_nbl > MAX_LINES || _nbc > MAX_COLS) {
     fprintf(stderr, "ERROR : MAX_LINES or MAX_COLS exceeded\n");
     exit(0);
   }
-  nbl = _nbl; nbc = _nbc;
+  nbl = _nbl;
+  nbc = _nbc;
   turn = 0;
   turn_of_last_moves_update = -1;
-  for(int i = 0; i < nbl; i++)
-    for(int j = 0; j < nbc; j++) {
-      if(i <= 1 ) {
+  for (int i = 0; i < nbl; i++)
+    for (int j = 0; j < nbc; j++) {
+      if (i <= 1) {
         board[i][j] = BLACK;
-      } else if(i < _nbl-2) {
+      } else if (i < _nbl - 2) {
         board[i][j] = EMPTY;
       } else {
         board[i][j] = WHITE;
@@ -121,13 +152,13 @@ void bt_t::init(int _nbl, int _nbc) {
 void bt_t::init_pieces() {
   nb_white_pieces = 0;
   nb_black_pieces = 0;
-  for(int i = 0; i < nbl; i++)
-    for(int j = 0; j < nbc; j++) {
-      if(board[i][j] == WHITE) {
+  for (int i = 0; i < nbl; i++)
+    for (int j = 0; j < nbc; j++) {
+      if (board[i][j] == WHITE) {
         white_pieces[nb_white_pieces].line = i;
         white_pieces[nb_white_pieces].col = j;
         nb_white_pieces++;
-      } else if(board[i][j] == BLACK) {
+      } else if (board[i][j] == BLACK) {
         black_pieces[nb_black_pieces].line = i;
         black_pieces[nb_black_pieces].col = j;
         nb_black_pieces++;
@@ -135,16 +166,16 @@ void bt_t::init_pieces() {
     }
 }
 // again print black in red (as bg is black... black is printed in red)
-void bt_t::print_board(FILE* _fp = stderr) {
+void bt_t::print_board(FILE *_fp = stderr) {
   fprintf(_fp, "   \x1B[34m");
-  for(int j = 0; j < nbc; j++) {
-    fprintf(_fp, "%c ", 'a'+j);
+  for (int j = 0; j < nbc; j++) {
+    fprintf(_fp, "%c ", 'a' + j);
   }
   fprintf(_fp, "\x1B[0m\n");
-  for(int i = 0; i < nbl; i++) {
-    fprintf(_fp, "\x1B[34m%2d\x1B[0m ", (nbl-i));
-    for(int j = 0; j < nbc; j++) {
-      if(board[i][j] == BLACK) 
+  for (int i = 0; i < nbl; i++) {
+    fprintf(_fp, "\x1B[34m%2d\x1B[0m ", (nbl - i));
+    for (int j = 0; j < nbc; j++) {
+      if (board[i][j] == BLACK)
         fprintf(_fp, "\x1B[31m%c\x1B[0m ", cboard[board[i][j]]);
       else
         fprintf(_fp, "%c ", cboard[board[i][j]]);
@@ -152,95 +183,131 @@ void bt_t::print_board(FILE* _fp = stderr) {
     fprintf(_fp, "\n");
   }
 }
-void bt_t::print_turn_and_moves(FILE* _fp = stderr) {
-  fprintf(_fp,"turn:%d\nmoves:", turn);
-  for(int i = 0; i < nb_moves; i++) {
-    moves[i].print(_fp, turn%2 == 1, nbl);
+void bt_t::print_turn_and_moves(FILE *_fp = stderr) {
+  fprintf(_fp, "turn:%d\nmoves:", turn);
+  for (int i = 0; i < nb_moves; i++) {
+    moves[i].print(_fp, turn % 2 == 1, nbl);
     fprintf(_fp, " ");
   }
   fprintf(_fp, "\n");
 }
 void bt_t::update_moves() {
-  if(turn%2 == 0) update_moves(WHITE);
-  else update_moves(BLACK);
+  if (turn % 2 == 0)
+    update_moves(WHITE);
+  else
+    update_moves(BLACK);
 }
 void bt_t::update_moves(int _color) {
-  if(turn_of_last_moves_update == turn) return; // MAJ ever done
+  if (turn_of_last_moves_update == turn)
+    return; // MAJ ever done
   turn_of_last_moves_update = turn;
   nb_moves = 0;
-  if(_color==WHITE) {
-    for(int i = 0; i < nb_white_pieces; i++) {
+  if (_color == WHITE) {
+    for (int i = 0; i < nb_white_pieces; i++) {
       int li = white_pieces[i].line;
       int ci = white_pieces[i].col;
-      if(white_can_move_right(li, ci)) add_move(li, ci, li-1, ci+1);
-      if(white_can_move_forward(li, ci)) add_move(li, ci, li-1, ci);
-      if(white_can_move_left(li, ci)) add_move(li, ci, li-1, ci-1);
+      if (white_can_move_right(li, ci))
+        add_move(li, ci, li - 1, ci + 1);
+      if (white_can_move_forward(li, ci))
+        add_move(li, ci, li - 1, ci);
+      if (white_can_move_left(li, ci))
+        add_move(li, ci, li - 1, ci - 1);
     }
-  } else if(_color == BLACK) {
-    for(int i = 0; i < nb_black_pieces; i++) {
+  } else if (_color == BLACK) {
+    for (int i = 0; i < nb_black_pieces; i++) {
       int li = black_pieces[i].line;
       int ci = black_pieces[i].col;
-      if(black_can_move_right(li, ci)) add_move(li, ci, li+1, ci+1);
-      if(black_can_move_forward(li, ci)) add_move(li, ci, li+1, ci);
-      if(black_can_move_left(li, ci)) add_move(li, ci, li+1, ci-1);
+      if (black_can_move_right(li, ci))
+        add_move(li, ci, li + 1, ci + 1);
+      if (black_can_move_forward(li, ci))
+        add_move(li, ci, li + 1, ci);
+      if (black_can_move_left(li, ci))
+        add_move(li, ci, li + 1, ci - 1);
     }
   }
 }
 bool bt_t::white_can_move_right(int _line, int _col) {
-  if(_line == 0) return false;
-  if(_col == nbc-1) return false;
-  if(board[_line-1][_col+1] != WHITE) return true;
+  if (_line == 0)
+    return false;
+  if (_col == nbc - 1)
+    return false;
+  if (board[_line - 1][_col + 1] != WHITE)
+    return true;
   return false;
 }
 bool bt_t::white_can_move_forward(int _line, int _col) {
-  if(_line == 0) return false;
-  if(board[_line-1][_col] == EMPTY) return true;
+  if (_line == 0)
+    return false;
+  if (board[_line - 1][_col] == EMPTY)
+    return true;
   return false;
 }
 bool bt_t::white_can_move_left(int _line, int _col) {
-  if(_line == 0) return false;
-  if(_col == 0) return false;
-  if(board[_line-1][_col-1] != WHITE) return true;
+  if (_line == 0)
+    return false;
+  if (_col == 0)
+    return false;
+  if (board[_line - 1][_col - 1] != WHITE)
+    return true;
   return false;
 }
 bool bt_t::black_can_move_right(int _line, int _col) {
-  if(_line == nbl-1) return false;
-  if(_col == nbc-1) return false;
-  if(board[_line+1][_col+1] != BLACK) return true;
+  if (_line == nbl - 1)
+    return false;
+  if (_col == nbc - 1)
+    return false;
+  if (board[_line + 1][_col + 1] != BLACK)
+    return true;
   return false;
 }
 bool bt_t::black_can_move_forward(int _line, int _col) {
-  if(_line == nbl-1) return false;
-  if(board[_line+1][_col] == EMPTY) return true;
+  if (_line == nbl - 1)
+    return false;
+  if (board[_line + 1][_col] == EMPTY)
+    return true;
   return false;
 }
 bool bt_t::black_can_move_left(int _line, int _col) {
-  if(_line == nbl-1) return false;
-  if(_col == 0) return false;
-  if(board[_line+1][_col-1] != BLACK) return true;
+  if (_line == nbl - 1)
+    return false;
+  if (_col == 0)
+    return false;
+  if (board[_line + 1][_col - 1] != BLACK)
+    return true;
   return false;
 }
 bt_move_t bt_t::get_rand_move() {
   update_moves();
-  int r = ((int)rand())%nb_moves;
+  int r = ((int)rand()) % nb_moves;
   return moves[r];
 }
 bool bt_t::can_play(bt_move_t _m) {
   int dx = abs(_m.col_f - _m.col_i);
-  if(dx > 1) return false;
+  if (dx > 1)
+    return false;
   int dy = abs(_m.line_f - _m.line_i);
-  if(dy > 1) return false;
-  if(_m.line_i < 0 || _m.line_i >= nbl) return false;
-  if(_m.line_f < 0 || _m.line_f >= nbl) return false;
-  if(_m.col_i < 0 || _m.col_i >= nbc) return false;
-  if(_m.col_f < 0 || _m.col_f >= nbc) return false;
+  if (dy > 1)
+    return false;
+  if (_m.line_i < 0 || _m.line_i >= nbl)
+    return false;
+  if (_m.line_f < 0 || _m.line_f >= nbl)
+    return false;
+  if (_m.col_i < 0 || _m.col_i >= nbc)
+    return false;
+  if (_m.col_f < 0 || _m.col_f >= nbc)
+    return false;
   int color_i = board[_m.line_i][_m.col_i];
   int color_f = board[_m.line_f][_m.col_f];
-  if(color_i == EMPTY) return false;
-  if(color_i == color_f) return false;
-  if(turn%2==0 && color_i == BLACK) return false;
-  if(turn%2==1 && color_i == WHITE) return false;
-  if(_m.col_i == _m.col_f && color_f != EMPTY) return false;
+  if (color_i == EMPTY)
+    return false;
+  if (color_i == color_f)
+    return false;
+  if (turn % 2 == 0 && color_i == BLACK)
+    return false;
+  if (turn % 2 == 1 && color_i == WHITE)
+    return false;
+  if (_m.col_i == _m.col_f && color_f != EMPTY)
+    return false;
   return true;
 }
 
@@ -249,37 +316,39 @@ void bt_t::play(bt_move_t _m) {
   int color_f = board[_m.line_f][_m.col_f];
   board[_m.line_f][_m.col_f] = color_i;
   board[_m.line_i][_m.col_i] = EMPTY;
-  if(color_i == WHITE) {
-    for(int i = 0; i < nb_white_pieces; i++) {
-      if(white_pieces[i].line == _m.line_i && white_pieces[i].col == _m.col_i) {
+  if (color_i == WHITE) {
+    for (int i = 0; i < nb_white_pieces; i++) {
+      if (white_pieces[i].line == _m.line_i &&
+          white_pieces[i].col == _m.col_i) {
         white_pieces[i].line = _m.line_f;
         white_pieces[i].col = _m.col_f;
         break;
       }
     }
-    if(color_f == BLACK) {
-      for(int i = 0; i < nb_black_pieces; i++) {
-        if(black_pieces[i].line == _m.line_f && black_pieces[i].col == _m.col_f) {
-          black_pieces[i] = black_pieces[nb_black_pieces-1];
+    if (color_f == BLACK) {
+      for (int i = 0; i < nb_black_pieces; i++) {
+        if (black_pieces[i].line == _m.line_f &&
+            black_pieces[i].col == _m.col_f) {
+          black_pieces[i] = black_pieces[nb_black_pieces - 1];
           nb_black_pieces--;
           break;
         }
       }
     }
-  } else if(color_i == BLACK) {
-    for(int i = 0; i < nb_black_pieces; i++) {
-      if(black_pieces[i].line == _m.line_i &&
-         black_pieces[i].col == _m.col_i) {
+  } else if (color_i == BLACK) {
+    for (int i = 0; i < nb_black_pieces; i++) {
+      if (black_pieces[i].line == _m.line_i &&
+          black_pieces[i].col == _m.col_i) {
         black_pieces[i].line = _m.line_f;
         black_pieces[i].col = _m.col_f;
         break;
       }
     }
-    if(color_f == WHITE) {
-      for(int i = 0; i < nb_white_pieces; i++) {
-        if(white_pieces[i].line == _m.line_f &&
-           white_pieces[i].col == _m.col_f) {
-          white_pieces[i] = white_pieces[nb_white_pieces-1];
+    if (color_f == WHITE) {
+      for (int i = 0; i < nb_white_pieces; i++) {
+        if (white_pieces[i].line == _m.line_f &&
+            white_pieces[i].col == _m.col_f) {
+          white_pieces[i] = white_pieces[nb_white_pieces - 1];
           nb_white_pieces--;
           break;
         }
@@ -289,18 +358,22 @@ void bt_t::play(bt_move_t _m) {
   turn++;
 }
 int bt_t::endgame() {
-  for(int i = 0; i < nbc; i++) {
-    if(board[0][i] == WHITE) return WHITE;
+  for (int i = 0; i < nbc; i++) {
+    if (board[0][i] == WHITE)
+      return WHITE;
   }
-  for(int i = 0; i < nbc; i++) {
-    if(board[nbl-1][i] == BLACK) return BLACK;
+  for (int i = 0; i < nbc; i++) {
+    if (board[nbl - 1][i] == BLACK)
+      return BLACK;
   }
   return EMPTY;
 }
 double bt_t::score(int _color) {
   int state = endgame();
-  if(state == EMPTY) return 0.0;
-  if(_color == state) return 1.0;
+  if (state == EMPTY)
+    return 0.0;
+  if (_color == state)
+    return 1.0;
   return -1.0;
 }
 
