@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <random>
+#include <ctime>
+
 #define WHITE 0
 #define BLACK 1
 #define EMPTY 2
@@ -101,7 +103,7 @@ struct bt_t {
   Node* selection(int board[MAX_LINES][MAX_COLS]);
   void expansion(Node* selected);
   bool simulation(Node* current);
-  void backpropagation(Node* simulated);
+  void backpropagation(Node* simulated, bool simulation);
 
   void add_move(int _li, int _ci, int _lf, int _cf) {
     moves[nb_moves].line_i = _li; moves[nb_moves].col_i = _ci;

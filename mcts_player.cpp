@@ -84,7 +84,24 @@ void play(char a, char b, char c, char d) {
   printf("= \n\n");
 }
 
+bt_move_t mcts(double _sec) {
+  
+}
 
+void backpropagation(Node* simulated, bool simulation) {
+  if (simulation) {
+    while (simulated != NULL) {
+      simulated->visit += 1;
+      simulated->wins += 1;
+      simulated = simulated->parent;
+    }
+  } else {
+    while (simulated != NULL) {
+      simulated->visit += 1;
+      simulated = simulated->parent;
+    }
+  }
+}
 
 int main(int _ac, char** _av) {
   bool echo_on = false;
