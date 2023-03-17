@@ -139,8 +139,8 @@ bt_move_t bt_t::mcts(double _sec) {
 
   do {
     Result selectedNode = selected(tree, cpy_B);
-    expansion(selectedNode.noeud, selectedNode);
-    backpropagation(selectedNode.noeud, simulation(selectedNode));
+    expansion(selectedNode.noeud, selectedNode.board);
+    backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
   } while (run_time < _sec)
   
