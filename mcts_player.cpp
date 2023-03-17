@@ -30,9 +30,11 @@ float UCB1(Node *noeud) {
 
 Result selection(Node *racine, bt_t board) {
   if (board.endgame() != EMPTY) {
+    board.play(racine->move);
     return {board, racine};
   }
   if (racine->visit == 0 and racine->parent != NULL) {
+    board.play(racine->move);
     return {board, racine};
   }
   float max = -1;
