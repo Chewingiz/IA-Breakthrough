@@ -16,6 +16,41 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
+Result selection(Node *racine, bt_t board);
+void expansion(Node *selected, bt_t board);
+bool simulation(bt_t board);
+void backpropagation(Node *selected, bool simulation);
+
+float UCB1(Node *noeud) {
+  return (noeud->wins / noeud->visit) +
+         (0.4 * sqrt(log(noeud->parent->visit) / noeud->visit));
+}
+
+Result selection(Node *racine, bt_t board) {
+  if (board.endgame() != EMPTY) {
+    board.play(racine->move);
+    return {board, racine};
+  }
+  if (racine->visit == 0 and racine->parent != NULL) {
+    board.play(racine->move);
+    return {board, racine};
+  }
+  float max = -1;
+  Node *best;
+  for (auto i : racine->children) {
+    if (i->visit == 0) {
+      return {board, i};
+    }
+    int new_eval = UCB1(i);
+    if (new_eval > max) {
+      max = new_eval;
+      best = i;
+    }
+  }
+  board.play(best->move);
+  return selection(best, board);
+}
+
 void help() {
   fprintf(stderr, "  quit\n");
   fprintf(stderr, "  echo ON | OFF\n");
@@ -100,13 +135,15 @@ bt_move_t bt_t::mcts(double _sec) {
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
+  bt_t cpy_B = B;
 
   do {
-    Node* selectedNode = selected(B.board);
-    expansion(selectedNode);
-    backpropagation(selectedNode, simulation(B.board));
+    Result selectedNode = selected(tree, cpy_B);
+    expansion(selectedNode.noeud, selectedNode);
+    backpropagation(selectedNode.noeud, simulation(selectedNode));
     run_time = clock() - start_time;
   } while (run_time < _sec)
+  
   return best_move(tree);
 }
 
