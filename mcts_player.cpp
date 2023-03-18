@@ -16,8 +16,6 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
-
-
 void help() {
   fprintf(stderr, "  quit\n");
   fprintf(stderr, "  echo ON | OFF\n");
@@ -84,7 +82,17 @@ void play(char a, char b, char c, char d) {
   printf("= \n\n");
 }
 
-
+bool playout(bt_t board){
+  int color = (turn%2==0)? WHITE: BLACK; // à changer pour la couleur de notre perso
+  int endgame_value = board.endgame();
+  while(endgame_value == EMPTY){
+    bt_move_t m = get_rand_move();
+    board.play(m);
+    endgame_value = board.endgame();
+  }
+  int winner_color = (turn%2 == 0)? WHITE: BLACK;
+  return (winner_color == color)? true: false; // true for win, false for loss
+}
 
 int main(int _ac, char** _av) {
   bool echo_on = false;
