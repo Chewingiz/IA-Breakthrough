@@ -146,6 +146,7 @@ bt_move_t bt_t::mcts(double _sec) {
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
+  expansion(tree, B);
   bt_t cpy_B = B;
 
   do {
