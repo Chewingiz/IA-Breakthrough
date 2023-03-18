@@ -37,7 +37,7 @@ Result selection(Node *racine, bt_t board) {
     return {board, racine};
   }
   float max = -1;
-  Node *best;
+  Node *best = new Node;
   for (auto i : racine->children) {
     if (i->visit == 0) {
       return {board, i};
@@ -54,7 +54,7 @@ Result selection(Node *racine, bt_t board) {
 void expansion(Node *selected, bt_t board){
   board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
-    Node *a;
+    Node *a = new Node;
     a->wins=0;
     a->parent=selected;
     a->visit=0;
@@ -99,7 +99,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(0.95);
+  bt_move_t m = B.mcts(2);
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -130,7 +130,7 @@ void play(char a, char b, char c, char d) {
 
 bt_move_t best_move(Node* selected) {
   float score = 0;
-  Node* best_child;
+  Node* best_child = new Node;
   for (auto i: selected->children) {
     if (UCB1(i) > score) {
       best_child = i;
@@ -142,7 +142,7 @@ bt_move_t best_move(Node* selected) {
 bt_move_t bt_t::mcts(double _sec) {
   clock_t start_time = clock();
   clock_t run_time;
-  Node* tree;
+  Node* tree = new Node;
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
