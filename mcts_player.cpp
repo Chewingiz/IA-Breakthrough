@@ -19,7 +19,7 @@ bool showboard_at_each_move = false;
 
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
-bool playout(bt_t board);
+bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
 
 float UCB1(Node *noeud) {
@@ -37,7 +37,7 @@ Result selection(Node *racine, bt_t board) {
     return {board, racine};
   }
   float max = -1;
-  Node *best;
+  Node *best = new Node;
   for (auto i : racine->children) {
     if (i->visit == 0) {
       return {board, i};
@@ -54,7 +54,8 @@ Result selection(Node *racine, bt_t board) {
 void expansion(Node *selected, bt_t board){
   board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
-    Node *a;
+    Node *a = new Node;
+    a->move=moves[i];
     a->wins=0;
     a->parent=selected;
     a->visit=0;
@@ -99,7 +100,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(0.95);
+  bt_move_t m = B.mcts(2);
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -130,7 +131,7 @@ void play(char a, char b, char c, char d) {
 
 bt_move_t best_move(Node* selected) {
   float score = 0;
-  Node* best_child;
+  Node* best_child = new Node;
   for (auto i: selected->children) {
     if (UCB1(i) > score) {
       best_child = i;
@@ -142,7 +143,7 @@ bt_move_t best_move(Node* selected) {
 bt_move_t bt_t::mcts(double _sec) {
   clock_t start_time = clock();
   clock_t run_time;
-  Node* tree;
+  Node* tree = new Node;
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
@@ -153,7 +154,7 @@ bt_move_t bt_t::mcts(double _sec) {
   do {
     Result selectedNode = selection(tree, cpy_B);
     expansion(selectedNode.noeud, selectedNode.board);
-    backpropagation(selectedNode.noeud, playout(selectedNode.board));
+    backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
   } while (run_time < _sec);
   
@@ -175,7 +176,7 @@ void backpropagation(Node* simulated, bool simulation) {
   }
 }
 
-bool playout(bt_t board){
+bool simulation(bt_t board){
   int color = (board.turn%2==0)? WHITE: BLACK;
   int endgame_value = board.endgame();
   while(endgame_value == EMPTY){
