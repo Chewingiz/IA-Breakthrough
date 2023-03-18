@@ -188,6 +188,36 @@ bool playout(bt_t board){
 
 }
 
+
+/* Fonction qui fait une evaluation heuristique pour essayer de determiner le joueur dans la meilleur position*/
+int evaluate_board(bt_t board) {
+  int white_score = 0;
+  int black_score = 0;
+
+  
+  for (int i = 0; i < board.nbl; i++) {
+    for (int j = 0; j < board.nbl; j++) {
+      if (board(i,j) == WHITE) { // Evaluation pour le joueur blanc
+
+      }else if (board(i,j) == BLACK) { // Evaluation pour le joueur noir
+
+      }
+    }
+  }
+
+  // Renvois le joueur avec la meilleure position en fonction du score
+  return (white_score > black_score)? WHITE: BLACK;
+}
+
+
+bool evaluate (bt_t board){
+  int color = (board.turn%2==0)? WHITE: BLACK;
+
+  int best_position_color = evaluate_board(board);
+  return (winner_color == color)? true: false; // true for win, false for loss
+
+}
+
 int main(int _ac, char** _av) {
   bool echo_on = false;
   setbuf(stdout, 0);
