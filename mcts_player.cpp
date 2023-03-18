@@ -60,10 +60,12 @@ Result selection(Node *racine, bt_t board) {
   Node *best = new Node;
   for (auto i : racine->children) {
     if (i->visit == 0) {
+      board.play(i->move);
       return {board, i};
     }
     int new_eval = UCB1(i);
     if (new_eval > max) {
+
       max = new_eval;
       best = i;
     }
@@ -170,12 +172,13 @@ bt_move_t bt_t::mcts(double _sec) {
   tree->children = {};
   expansion(tree, B);
   
-  print_move(tree->children.at(0)->move);
+  //print_move(tree->children.at(0)->move);
   bt_t cpy_B = B;
 
   do {
     Result selectedNode = selection(tree, cpy_B);
-    //print_file(selectedNode.board);
+    print_file(selectedNode.board);
+  
     expansion(selectedNode.noeud, selectedNode.board);
     backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
