@@ -19,7 +19,7 @@ bool showboard_at_each_move = false;
 
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
-bool playout(bt_t board);
+bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
 
 float UCB1(Node *noeud) {
@@ -153,7 +153,7 @@ bt_move_t bt_t::mcts(double _sec) {
   do {
     Result selectedNode = selection(tree, cpy_B);
     expansion(selectedNode.noeud, selectedNode.board);
-    backpropagation(selectedNode.noeud, playout(selectedNode.board));
+    backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
   } while (run_time < _sec);
   
@@ -175,7 +175,7 @@ void backpropagation(Node* simulated, bool simulation) {
   }
 }
 
-bool playout(bt_t board){
+bool simulation(bt_t board){
   int color = (board.turn%2==0)? WHITE: BLACK;
   int endgame_value = board.endgame();
   while(endgame_value == EMPTY){
