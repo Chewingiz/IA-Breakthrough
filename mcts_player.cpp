@@ -16,6 +16,7 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
+
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
 bool simulation(bt_t board);
@@ -61,7 +62,6 @@ void expansion(Node *selected, bt_t board){
   }
   board.nb_moves=0;
 }
-
 void help() {
   fprintf(stderr, "  quit\n");
   fprintf(stderr, "  echo ON | OFF\n");
@@ -172,6 +172,18 @@ void backpropagation(Node* simulated, bool simulation) {
       simulated = simulated->parent;
     }
   }
+
+bool playout(bt_t board){
+  int color = (turn%2==0)? WHITE: BLACK;
+  int endgame_value = board.endgame();
+  while(endgame_value == EMPTY){
+    bt_move_t m = get_rand_move();
+    board.play(m);
+    endgame_value = board.endgame();
+  }
+  int winner_color = (turn%2 == 0)? WHITE: BLACK;
+  return (winner_color == color)? true: false; // true for win, false for loss
+
 }
 
 int main(int _ac, char** _av) {
