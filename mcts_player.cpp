@@ -55,6 +55,7 @@ void expansion(Node *selected, bt_t board){
   board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
     Node *a = new Node;
+    a->move=moves[i];
     a->wins=0;
     a->parent=selected;
     a->visit=0;
