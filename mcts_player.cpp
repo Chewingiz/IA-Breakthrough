@@ -189,17 +189,48 @@ bool simulation(bt_t board){
 
 }
 
-
+/*Les blancs décendent et les noirs montent*/
 /* Fonction qui fait une evaluation heuristique pour essayer de determiner le joueur dans la meilleur position*/
 int evaluate_board(bt_t board) {
   int white_score = 0;
   int black_score = 0;
 
-  
+  int value_protection = 1;
+  int value_danger = -2;
+  int value_can_eat = 2;
+
   for (int i = 0; i < board.nbc; i++) {
     for (int j = 0; j < board.nbl; j++) {
       if (board.board[i][j] == WHITE) {          // Evaluation pour le joueur blanc
         white_score += (board.nbl - i);  // plus la pièce est proche de la promotion plus le score est grand
+        if((i+1 < board.nbl)&&(j+1 < board.nbc)){ //test si on peu bouger
+          //+ gagner
+          if (board.board[i+1][j+1] == BLACK) {//test regarde si on peu manger 
+            // ++ gagner
+          }
+        }
+        if((i+1 < board.nbl)&&(j-1 > 0)){ //test si on peu bouger
+          //+ gagner
+          if (board.board[i+1][j-1] == BLACK) {//test regarde si on peu manger 
+            // ++ gagner
+          }
+        }
+
+
+      //regarde si on est trade si on se fait manger
+       if((i-1  > 0)&&(j+1 < board.nbc)){ 
+          if (board.board[i-1][j+1] == WHITE){//+ gagner
+          }
+        }
+        if((i-1 > 0)&&(j-1 > 0)){ //test si on peu bouger
+           if (board.board[i-1][j-1] == WHITE){//+ gagner
+           }
+
+        }
+
+        
+
+        /* Peut manger */
       }else if (board.board[i][j] == BLACK) {    // Evaluation pour le joueur noir
         black_score += i+1;
       }
@@ -210,7 +241,7 @@ int evaluate_board(bt_t board) {
   return (white_score > black_score)? WHITE: BLACK;
 }
 
-
+/*egalité de score == defaite*/
 bool evaluate (bt_t board){
   int color = (board.turn%2==0)? WHITE: BLACK;
   int best_position_color = evaluate_board(board);
