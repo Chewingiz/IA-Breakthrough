@@ -19,7 +19,7 @@ bool showboard_at_each_move = false;
 
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
-bool simulation(bt_t board);
+bool playout(bt_t board);
 void backpropagation(Node *selected, bool simulation);
 
 float UCB1(Node *noeud) {
@@ -146,15 +146,16 @@ bt_move_t bt_t::mcts(double _sec) {
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
+  tree->children = {};
   expansion(tree, B);
   bt_t cpy_B = B;
 
   do {
-    Result selectedNode = selected(tree, cpy_B);
+    Result selectedNode = selection(tree, cpy_B);
     expansion(selectedNode.noeud, selectedNode.board);
-    backpropagation(selectedNode.noeud, simulation(selectedNode.board));
+    backpropagation(selectedNode.noeud, playout(selectedNode.board));
     run_time = clock() - start_time;
-  } while (run_time < _sec)
+  } while (run_time < _sec);
   
   return best_move(tree);
 }
@@ -172,16 +173,17 @@ void backpropagation(Node* simulated, bool simulation) {
       simulated = simulated->parent;
     }
   }
+}
 
 bool playout(bt_t board){
-  int color = (turn%2==0)? WHITE: BLACK;
+  int color = (board.turn%2==0)? WHITE: BLACK;
   int endgame_value = board.endgame();
   while(endgame_value == EMPTY){
-    bt_move_t m = get_rand_move();
+    bt_move_t m = board.get_rand_move();
     board.play(m);
     endgame_value = board.endgame();
   }
-  int winner_color = (turn%2 == 0)? WHITE: BLACK;
+  int winner_color = (board.turn%2 == 0)? WHITE: BLACK;
   return (winner_color == color)? true: false; // true for win, false for loss
 
 }
