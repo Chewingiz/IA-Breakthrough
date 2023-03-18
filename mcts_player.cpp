@@ -195,12 +195,12 @@ int evaluate_board(bt_t board) {
   int black_score = 0;
 
   
-  for (int i = 0; i < board.nbl; i++) {
+  for (int i = 0; i < board.nbc; i++) {
     for (int j = 0; j < board.nbl; j++) {
-      if (board(i,j) == WHITE) { // Evaluation pour le joueur blanc
-
-      }else if (board(i,j) == BLACK) { // Evaluation pour le joueur noir
-
+      if (board(i,j) == WHITE) {          // Evaluation pour le joueur blanc
+        white_score += (board.nbl - i);  // plus la pièce est proche de la promotion plus le score est grand
+      }else if (board(i,j) == BLACK) {    // Evaluation pour le joueur noir
+        black_score += i+1;
       }
     }
   }
@@ -212,7 +212,6 @@ int evaluate_board(bt_t board) {
 
 bool evaluate (bt_t board){
   int color = (board.turn%2==0)? WHITE: BLACK;
-
   int best_position_color = evaluate_board(board);
   return (winner_color == color)? true: false; // true for win, false for loss
 
