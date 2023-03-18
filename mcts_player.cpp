@@ -3,6 +3,7 @@
 #include <string.h>
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "mybt.h"
 
 bt_t B;
@@ -16,12 +17,31 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
-
+void print_move(bt_move_t move);
+void print_file(bt_t b);
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
 bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
 
+void print_move(bt_move_t move){
+  fstream my_file;
+  my_file.open("my_file", ios::out);
+  my_file << move.line_i << " " << move.col_i << endl;
+  my_file << move.line_f << " " << move.col_f << endl;
+}
+
+void print_file(bt_t b) {
+  fstream my_file;
+  my_file.open("my_file", ios::out);
+  for (int i = 0; i < b.nbl; i++) {
+    for (int j = 0; j < b.nbc; j++) {
+      my_file << cboard[b.board[i][j]];
+
+    }
+    my_file << endl;
+  }
+}
 float UCB1(Node *noeud) {
   return (noeud->wins / noeud->visit) +
          (0.4 * sqrt(log(noeud->parent->visit) / noeud->visit));
@@ -55,7 +75,7 @@ void expansion(Node *selected, bt_t board){
   board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
     Node *a = new Node;
-    a->move=moves[i];
+    a->move=board.moves[i];
     a->wins=0;
     a->parent=selected;
     a->visit=0;
@@ -149,10 +169,13 @@ bt_move_t bt_t::mcts(double _sec) {
   tree->wins = 0;
   tree->children = {};
   expansion(tree, B);
+  
+  print_move(tree->children.at(0)->move);
   bt_t cpy_B = B;
 
   do {
     Result selectedNode = selection(tree, cpy_B);
+    //print_file(selectedNode.board);
     expansion(selectedNode.noeud, selectedNode.board);
     backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
@@ -188,6 +211,7 @@ bool simulation(bt_t board){
   return (winner_color == color)? true: false; // true for win, false for loss
 
 }
+
 
 int main(int _ac, char** _av) {
   bool echo_on = false;
