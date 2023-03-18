@@ -51,13 +51,13 @@ Result selection(Node *racine, bt_t board) {
   return selection(best, board);
 }
 void expansion(Node *selected, bt_t board){
-  board.update_moves()
+  board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
     Node *a;
-    a.wins=0;
-    a.parent=selected;
-    a.visit=0
-    selected.children.push_back(a);
+    a->wins=0;
+    a->parent=selected;
+    a->visit=0;
+    selected->children.push_back(a);
   }
   board.nb_moves=0;
 }

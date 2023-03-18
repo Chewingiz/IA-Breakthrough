@@ -72,7 +72,7 @@ struct bt_t {
   int nb_white_pieces;
   bt_piece_t black_pieces[2 * MAX_LINES];
   int nb_black_pieces;
-  bt_move_t moves[3 * 2 * MAX_LINES];
+  bt_move_t moves[3 * 2 * MAX_LINES]; 
   int nb_moves;
   // last turn of moves update
   int turn_of_last_moves_update;
