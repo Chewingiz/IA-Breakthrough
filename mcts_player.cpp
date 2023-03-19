@@ -215,9 +215,7 @@ int evaluate_board(bt_t board) {
             // ++ gagner
           }
         }
-
-
-      //regarde si on est trade si on se fait manger
+        //regarde si on est trade si on se fait manger
        if((i-1  > 0)&&(j+1 < board.nbc)){ 
           if (board.board[i-1][j+1] == WHITE){//+ gagner
           }
@@ -226,13 +224,32 @@ int evaluate_board(bt_t board) {
            if (board.board[i-1][j-1] == WHITE){//+ gagner
            }
 
-        }
-
+        }    
         
-
-        /* Peut manger */
       }else if (board.board[i][j] == BLACK) {    // Evaluation pour le joueur noir
         black_score += i+1;
+        if((i-1 > 0) && (j+1 < board.nbc)){ //test si on peu bouger
+          //+ gagner
+          if (board.board[i-1][j+1] == BLACK) {//test regarde si on peu manger 
+            // ++ gagner
+          }
+        }
+        if((i-1 > 0) && (j-1 > 0)){ //test si on peu bouger
+          //+ gagner
+          if (board.board[i-1][j-1] == BLACK) {//test regarde si on peu manger 
+            // ++ gagner
+          }
+        }
+        //regarde si on est trade si on se fait manger
+       if((i+1 < board.nbl) && (j+1 < board.nbc)){ 
+          if (board.board[i+1][j+1] == WHITE){//+ gagner
+          }
+        }
+        if((i+1 < board.nbl) && (j-1 > 0)){ //test si on peu bouger
+           if (board.board[i+1][j-1] == WHITE){//+ gagner
+           }
+
+        }
       }
     }
   }
