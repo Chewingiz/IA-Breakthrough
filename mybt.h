@@ -2,7 +2,7 @@
 #define MYBT_H
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
+#include <chrono>
 #include <random>
 #include <vector>
 
@@ -105,7 +105,7 @@ struct bt_t {
   double eval();
   bt_move_t minimax(double _sec);
   bt_move_t alphabeta(double _sec);
-  bt_move_t mcts(double _sec);
+  bt_move_t mcts(double milli);
   bt_move_t mcts_ppa(double _sec);
   bt_move_t nmcs(double _sec);
   bt_move_t nrpa(double _sec);

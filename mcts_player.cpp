@@ -17,12 +17,26 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
+void print_int(int n);
+void print_string(string truc);
 void print_move(bt_move_t move);
 void print_file(bt_t b);
 Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
 bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
+
+void print_string(string truc) {
+  fstream my_file;
+  my_file.open("my_file", fstream::app);
+  my_file << truc << endl;
+}
+
+void print_int(int n) {
+  fstream my_file;
+  my_file.open("my_file", fstream::app);
+  my_file << n << endl;
+}
 
 void print_move(bt_move_t move){
   fstream my_file;
@@ -122,7 +136,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(2);
+  bt_move_t m = B.mcts(25);
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -162,27 +176,33 @@ bt_move_t best_move(Node* selected) {
   return best_child->move;
 }
 
-bt_move_t bt_t::mcts(double _sec) {
-  clock_t start_time = clock();
-  clock_t run_time;
+bt_move_t bt_t::mcts(double milli) {
+  auto start_time = chrono::steady_clock::now();
+  chrono::duration<double, std::milli> run_time;
   Node* tree = new Node;
+  bool win;
   tree->parent = NULL;
   tree->visit = 0;
   tree->wins = 0;
   tree->children = {};
   expansion(tree, B);
-  
+  int boucle = 0;
   //print_move(tree->children.at(0)->move);
   bt_t cpy_B = B;
 
   do {
+    boucle++;
+    print_int(boucle);
     Result selectedNode = selection(tree, cpy_B);
-    print_file(selectedNode.board);
-  
+    print_string("selection");
     expansion(selectedNode.noeud, selectedNode.board);
-    backpropagation(selectedNode.noeud, simulation(selectedNode.board));
-    run_time = clock() - start_time;
-  } while (run_time < _sec);
+    print_string("expansion");
+    win = simulation(selectedNode.board);
+    print_string("simulation");
+    backpropagation(selectedNode.noeud, win);
+    print_string("backpropagation");
+    run_time = chrono::steady_clock::now() - start_time;
+  } while (run_time.count() < milli);
   
   return best_move(tree);
 }
