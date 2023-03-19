@@ -216,6 +216,87 @@ bool simulation(bt_t board){
 }
 
 
+/*Les blancs décendent et les noirs montent*/
+/* Fonction qui fait une evaluation heuristique pour essayer de determiner le joueur dans la meilleur position*/
+int evaluate_board(bt_t board) {
+  int white_score = 0;
+  int black_score = 0;
+
+  int value_trade= 1;
+  int value_danger = -2;
+  int value_can_eat = 2;
+  int value_can_move = 1;
+  for (int i = 0; i < board.nbc; i++) {
+    for (int j = 0; j < board.nbl; j++) {
+      if (board.board[i][j] == WHITE) {          // Evaluation pour le joueur blanc
+        white_score += (board.nbl - i);  // plus la pièce est proche de la promotion plus le score est grand
+        if((i+1 < board.nbl)&&(j+1 < board.nbc)){ //test si on peu bouger
+          white_score += value_can_move;
+          if (board.board[i+1][j+1] == BLACK) {//test regarde si on peu manger 
+            white_score += value_can_eat;
+          }
+        }
+        if((i+1 < board.nbl)&&(j-1 > 0)){ //test si on peu bouger
+          white_score += value_can_move;
+          if (board.board[i+1][j-1] == BLACK) {//test regarde si on peu manger 
+            white_score += value_can_eat;
+          }
+        }
+        //regarde si on est trade si on se fait manger
+       if((i-1  > 0)&&(j+1 < board.nbc)){ 
+          if (board.board[i-1][j+1] == WHITE){//+ gagner
+            white_score += value_trade;
+          }
+        }
+        if((i-1 > 0)&&(j-1 > 0)){ //test si on peu bouger
+           if (board.board[i-1][j-1] == WHITE){//+ gagner
+             white_score += value_trade;
+           }
+
+        }    
+        
+      }else if (board.board[i][j] == BLACK) {    // Evaluation pour le joueur noir
+        black_score += i+1;
+        if((i-1 > 0) && (j+1 < board.nbc)){ //test si on peu bouger
+          black_score += value_can_move;
+          if (board.board[i-1][j+1] == WHITE) {//test regarde si on peu manger 
+            black_score += value_can_eat;
+          }
+        }
+        if((i-1 > 0) && (j-1 > 0)){ //test si on peu bouger
+          black_score += value_can_move;
+          if (board.board[i-1][j-1] == WHITE) {//test regarde si on peu manger 
+            black_score += value_can_eat;
+          }
+        }
+        //regarde si on est trade si on se fait manger
+       if((i+1 < board.nbl) && (j+1 < board.nbc)){ 
+          if (board.board[i+1][j+1] == BLACK){
+            black_score += value_trade;
+          }
+        }
+        if((i+1 < board.nbl) && (j-1 > 0)){ 
+          if (board.board[i+1][j-1] == BLACK){
+            black_score += value_trade;
+          }
+        }
+      }
+    }
+  }
+
+  // Renvois le joueur avec la meilleure position en fonction du score
+  return (white_score > black_score)? WHITE: BLACK;
+}
+
+/*egalité de score == defaite*/
+bool evaluate (bt_t board){
+  int color = (board.turn%2==0)? WHITE: BLACK;
+  int best_position_color = evaluate_board(board);
+  return (best_position_color == color)? true: false; // true for win, false for loss
+
+}
+
+
 int main(int _ac, char** _av) {
   bool echo_on = false;
   setbuf(stdout, 0);
