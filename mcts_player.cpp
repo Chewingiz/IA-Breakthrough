@@ -137,7 +137,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(1000);
+  bt_move_t m = B.mcts(999); // durée en millisecondes
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -187,24 +187,24 @@ bt_move_t bt_t::mcts(double milli) {
   tree->wins = 0;
   tree->children = {};
   expansion(tree, B);
-  int boucle = 0;
+  //int boucle = 0;
   //print_move(tree->children.at(0)->move);
   bt_t cpy_B = B;
 
   do {
-    boucle++;
-    print_int(boucle);
+    //boucle++;
     Result selectedNode = selection(tree, cpy_B);
-    print_string("selection");
+    //print_string("selection");
     expansion(selectedNode.noeud, selectedNode.board);
-    print_string("expansion");
+    //print_string("expansion");
     win = evaluate(selectedNode.board);
-    print_string("simulation");
+    //print_string("simulation");
     backpropagation(selectedNode.noeud, win);
-    print_string("backpropagation");
+    //print_string("backpropagation");
     run_time = chrono::steady_clock::now() - start_time;
   } while (run_time.count() < milli);
   
+  //print_int(boucle);
   return best_move(tree);
 }
 
