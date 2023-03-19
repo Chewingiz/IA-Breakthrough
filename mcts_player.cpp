@@ -17,6 +17,8 @@ bool verbose = true;
 bool showboard_at_each_move = false;
 #endif
 
+void print_string(string fonction);
+void print_boucle(int n);
 void print_move(bt_move_t move);
 void print_file(bt_t b);
 Result selection(Node *racine, bt_t board);
@@ -24,6 +26,16 @@ void expansion(Node *selected, bt_t board);
 bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
 
+void print_string(string fonction){
+  fstream my_file;
+  my_file.open("my_file", fstream::app); // write sans effacer
+  my_file << fonction << endl;
+}
+void print_boucle(int n) {
+  fstream my_file;
+  my_file.open("my_file", ios::out);
+  my_file << n << endl;
+}
 void print_move(bt_move_t move){
   fstream my_file;
   my_file.open("my_file", ios::out);
@@ -122,7 +134,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(2);
+  bt_move_t m = B.mcts(200000000);
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -174,11 +186,12 @@ bt_move_t bt_t::mcts(double _sec) {
   
   //print_move(tree->children.at(0)->move);
   bt_t cpy_B = B;
-
+  int boucle = 0;
   do {
+    boucle++;
     Result selectedNode = selection(tree, cpy_B);
-    print_file(selectedNode.board);
-  
+    //print_file(selectedNode.board);
+    //print_boucle(boucle);
     expansion(selectedNode.noeud, selectedNode.board);
     backpropagation(selectedNode.noeud, simulation(selectedNode.board));
     run_time = clock() - start_time;
