@@ -25,6 +25,7 @@ Result selection(Node *racine, bt_t board);
 void expansion(Node *selected, bt_t board);
 bool simulation(bt_t board);
 void backpropagation(Node *selected, bool simulation);
+bool evaluate (bt_t board);
 
 void print_string(string truc) {
   fstream my_file;
@@ -136,7 +137,7 @@ void genmove() {
     printf("= \n\n");
     return;
   }
-  bt_move_t m = B.mcts(25);
+  bt_move_t m = B.mcts(1000);
   B.play(m);
   if(verbose) {
     m.print(stderr, white_turn, B.nbl);
@@ -197,7 +198,7 @@ bt_move_t bt_t::mcts(double milli) {
     print_string("selection");
     expansion(selectedNode.noeud, selectedNode.board);
     print_string("expansion");
-    win = simulation(selectedNode.board);
+    win = evaluate(selectedNode.board);
     print_string("simulation");
     backpropagation(selectedNode.noeud, win);
     print_string("backpropagation");
