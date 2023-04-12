@@ -354,7 +354,15 @@ void bt_t::play(bt_move_t _m) {
   }
   turn++;
 }
+
 int bt_t::endgame() {
+  if (nb_black_pieces == 0){
+    return WHITE;
+  }
+  if (nb_white_pieces == 0){
+    return BLACK;
+  }
+    
   for (int i = 0; i < nbc; i++) {
     if (board[0][i] == WHITE)
       return WHITE;

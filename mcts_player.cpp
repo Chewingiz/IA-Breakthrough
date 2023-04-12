@@ -63,6 +63,7 @@ float UCB1(Node *noeud) {
 }
 
 Result selection(Node *racine, bt_t board) {
+  //fprintf(stderr, "coucou selecction");
   if (board.endgame() != EMPTY) {
     board.play(racine->move);
     return {board, racine};
@@ -86,9 +87,11 @@ Result selection(Node *racine, bt_t board) {
     }
   }
   board.play(best->move);
+  //fprintf(stderr, "end exp");
   return selection(best, board);
 }
 void expansion(Node *selected, bt_t board){
+ // fprintf(stderr, "coucou exp");
   board.update_moves();
   for(int i=0;i<board.nb_moves;i++){
     Node *a = new Node;
@@ -99,6 +102,7 @@ void expansion(Node *selected, bt_t board){
     selected->children.push_back(a);
   }
   board.nb_moves=0;
+  fprintf(stderr, "end exp");
 }
 void help() {
   fprintf(stderr, "  quit\n");
@@ -178,6 +182,7 @@ bt_move_t best_move(Node* selected) {
 }
 
 bt_move_t bt_t::mcts(double milli) {
+  fprintf(stderr, "mcts\n");
   auto start_time = chrono::steady_clock::now();
   chrono::duration<double, std::milli> run_time;
   Node* tree = new Node;
@@ -205,6 +210,7 @@ bt_move_t bt_t::mcts(double milli) {
   } while (run_time.count() < milli);
   
   //print_int(boucle);
+  //fprintf(stderr, "end mcts");
   return best_move(tree);
 }
 
@@ -240,6 +246,7 @@ bool simulation(bt_t board){
 /*Les blancs décendent et les noirs montent*/
 /* Fonction qui fait une evaluation heuristique pour essayer de determiner le joueur dans la meilleur position*/
 int evaluate_board(bt_t board) {
+  //fprintf(stderr, "coucou eval");
   int white_score = 0;
   int black_score = 0;
 
@@ -306,6 +313,7 @@ int evaluate_board(bt_t board) {
   }
 
   // Renvois le joueur avec la meilleure position en fonction du score
+  //fprintf(stderr, "end eval");
   return (white_score > black_score)? WHITE: BLACK;
 }
 

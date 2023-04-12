@@ -1,9 +1,9 @@
 #!/bin/sh
 
-PRG_1=./player_A
-PRG_2=./player_B
+PRG_1=./nj0
+PRG_2=./CMBR_player
 GAME_DIR=new_stats
-NB_GAMES_PER_SIDE=10
+NB_GAMES_PER_SIDE=6
 NBL=6
 NBC=4
 
